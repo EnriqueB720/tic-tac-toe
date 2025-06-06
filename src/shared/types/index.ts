@@ -5,3 +5,5 @@ export * from "./image.type";
 export * from "./grid-item.type";
 export * from "./grid.type";
 export * from "./board-item.type";
+export * from "./board.type";
+export * from "./player.type";

@@ -14,7 +14,6 @@ const BoardItem: React.FC<BoardItemProps> = ({
 	const [selectedImage, setSelectedImage] = useState<PlayerType | null>(null);
 
 	const markPlayerSymbol = (player: PlayerType) => {
-		console.log(player);
 		if(selectedImage === null){
 			setSelectedImage(player);
 		}

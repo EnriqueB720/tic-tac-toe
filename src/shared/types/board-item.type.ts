@@ -1,5 +1,6 @@
 import { PlayerType } from "./player.type";
 
 export interface BoardItemProps{
-  WhoIsPlaying: PlayerType;
+  position: number;
+  sign: PlayerType | null;
 }

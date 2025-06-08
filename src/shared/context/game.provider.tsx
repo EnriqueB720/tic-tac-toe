@@ -5,16 +5,21 @@ import { PlayerMoves } from '../models';
 
 const GameProvider: FC<GameProviderProps> = ({ children }) => {
 
-  const [actualPlayer, setActualPlayer] = useState<PlayerType>();
+  const [actualPlayer, setActualPlayer] = useState<PlayerType>('X');
   const [historyOfMoves, setHistoryOfMoves] = useState<PlayerMoves[]>([]);
   const [roundNumber, setRoundNumber] = useState<number>(0);
 
 
-  const removeLastMove = () => {
-    historyOfMoves.pop();
+  const removeLastMove = (): PlayerMoves => {
+    if (historyOfMoves.length === 0) return {};
 
-    let newHistoryOfMoves = [...historyOfMoves];
-    setHistoryOfMoves(newHistoryOfMoves);
+    const newHistory = [...historyOfMoves];
+    const lastMove = newHistory.pop();
+
+    setActualPlayer(lastMove?._whoIsPlaying!)
+    setHistoryOfMoves(newHistory);
+
+    return lastMove || {};
   }
 
 

@@ -2,9 +2,9 @@ import * as React from 'react';
 
 import _ from 'lodash';
 
-import { BoardItemProps, PlayerType } from '@types';
+import { BoardItemProps } from '@types';
 import { Box, Image } from '../../atoms';
-import { useState, useContext } from 'react';
+import {  useContext } from 'react';
 import { GameContext } from '@/shared/context';
 
 const BoardItem: React.FC<BoardItemProps> = ({
@@ -12,15 +12,12 @@ const BoardItem: React.FC<BoardItemProps> = ({
   sign
 }) => {
 
-  const { actualPlayer, changePlayer, registerNewMove } = useContext(GameContext);
+  const { changePlayer, registerNewMove } = useContext(GameContext);
 
-	const [selectedImage, setSelectedImage] = useState<PlayerType | null>(sign);
 
-	const markPlayerSymbol = (player: PlayerType) => {
-		if(selectedImage === null){
-			setSelectedImage(player);
+	const markPlayerSymbol = () => {
+		if(sign === null){
       changePlayer();
-
       registerNewMove(position);
 		}
 	}
@@ -34,14 +31,14 @@ const BoardItem: React.FC<BoardItemProps> = ({
 			display={'flex'}
       borderRadius={3}
       border={"1px solid #ABABAB"}
-			onClick={() => markPlayerSymbol(actualPlayer!)}
+			onClick={() => markPlayerSymbol()}
 			>
       {
-        selectedImage == 'X' ?
+        sign == 'X' ?
           <Image
             src="/images/x-sign.png" />
           :
-          selectedImage == 'O' ?
+          sign == 'O' ?
             <Image
               src="images/o-sign.png" />
             :

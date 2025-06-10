@@ -9,13 +9,15 @@ export interface IGameContext {
   removeLastMove: () => PlayerMoves;
   changePlayer: () => void;
   registerNewMove: (position: number) => void;
+  resetGame: () => void;
 }
 
 export const GameContext = createContext<IGameContext>({
   actualPlayer: undefined,
   historyOfMoves: [],
-  roundNumber: undefined,
+  roundNumber: 0,
   removeLastMove: () => new PlayerMoves,
   changePlayer: () => {},
-  registerNewMove: () => {}
+  registerNewMove: () => {},
+  resetGame: () => {}
 });

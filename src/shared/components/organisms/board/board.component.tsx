@@ -10,9 +10,6 @@ import { GameContext } from '@/shared/context';
 import { PlayerMoves } from '@/shared/models';
 
 const Board: React.FC<BoardProps> = ({
-  isGameOver,
-  isNewGame,
-  playerMoves,
   removeLastMoveFlag,
   setRemoveLastMoveFlag
 }) => {
@@ -24,20 +21,17 @@ const Board: React.FC<BoardProps> = ({
   useEffect(() => {
     if (removeLastMoveFlag && historyOfMoves.length > 0) {
       let lastPlay = removeLastMove();
-
       setLastMove(lastPlay);
-      
     }
     
     setRemoveLastMoveFlag(false);
   }, [removeLastMoveFlag]);
+  
 
-
-
-  const getSignAtPosition = (pos: number) => {
+  const getSignAtPosition = useCallback((pos: number) => {
     const move = historyOfMoves.find(move => move._position === pos);
     return move ? move._signMarked : null;
-  };
+  }, [historyOfMoves]) ;
 
   return (
     <Box w={335} h={335}>

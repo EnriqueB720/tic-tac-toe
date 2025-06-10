@@ -1,0 +1,50 @@
+@keyframes glitch {
+  0%, 100% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(2px, -2px);
+  }
+  60% {
+    transform: translate(-1px, 1px);
+  }
+  80% {
+    transform: translate(1px, -1px);
+  }
+}
+
+.glitch-text {
+  font-size: 5rem;
+  font-weight: bold;
+  position: relative;
+  color: black;
+  animation: glitch 2s infinite;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text); /* Use dynamic content from data-text attr */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  color: black;
+  background: transparent;
+  animation: glitch 2s infinite;
+}
+
+.glitch-text::before {
+  color: #ff005e;
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 0 45%);
+  z-index: 1;
+}
+
+.glitch-text::after {
+  color: #00d4ff;
+  clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  z-index: 1;
+}

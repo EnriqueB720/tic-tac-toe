@@ -7,7 +7,7 @@ const GameProvider: FC<GameProviderProps> = ({ children }) => {
 
   const [actualPlayer, setActualPlayer] = useState<PlayerType>('X');
   const [historyOfMoves, setHistoryOfMoves] = useState<PlayerMoves[]>([]);
-  const [roundNumber, setRoundNumber] = useState<number>(0);
+  const [roundNumber, setRoundNumber] = useState<number>(1);
 
 
   const removeLastMove = (): PlayerMoves => {
@@ -39,10 +39,16 @@ const GameProvider: FC<GameProviderProps> = ({ children }) => {
       _roundNumber: roundNumber,
       _signMarked: actualPlayer!,
       _whoIsPlaying: actualPlayer!
-    })
+    });
 
     setHistoryOfMoves(newHistoryOfMoves);
-    setRoundNumber(prev => prev++);
+    setRoundNumber(prev => prev+1);
+  }
+
+  const resetGame = () => {
+    setHistoryOfMoves([]);
+    setRoundNumber(1);
+    setActualPlayer('X');
   }
 
 
@@ -50,9 +56,11 @@ const GameProvider: FC<GameProviderProps> = ({ children }) => {
     <GameContext.Provider value={{
       actualPlayer,
       historyOfMoves,
+      roundNumber,
       removeLastMove,
       changePlayer,
-      registerNewMove
+      registerNewMove,
+      resetGame
     }}>
       {children}
     </GameContext.Provider>

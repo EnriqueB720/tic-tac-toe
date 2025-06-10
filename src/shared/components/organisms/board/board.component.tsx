@@ -3,7 +3,7 @@ import * as React from 'react';
 import _ from 'lodash';
 
 import { BoardProps } from '@types';
-import { Box, Grid, GridItem } from '../../atoms';
+import { Box, Grid, GridItem, Text } from '../../atoms';
 import { useState, useEffect, useContext, useCallback } from 'react';
 import { BoardItem } from '../../molecules';
 import { GameContext } from '@/shared/context';
@@ -23,15 +23,15 @@ const Board: React.FC<BoardProps> = ({
       let lastPlay = removeLastMove();
       setLastMove(lastPlay);
     }
-    
+
     setRemoveLastMoveFlag(false);
   }, [removeLastMoveFlag]);
-  
+
 
   const getSignAtPosition = useCallback((pos: number) => {
     const move = historyOfMoves.find(move => move._position === pos);
     return move ? move._signMarked : null;
-  }, [historyOfMoves]) ;
+  }, [historyOfMoves]);
 
   return (
     <Box w={335} h={335}>
@@ -49,6 +49,24 @@ const Board: React.FC<BoardProps> = ({
           </GridItem>
         ))}
       </Grid>
+      {
+        lastMove && historyOfMoves.length > 0 ?
+          <>
+            <Text textStyle="xl">
+              Last Play ={'>'}
+              Round:
+              {
+                " " + lastMove._roundNumber + " "
+              }
+              Sign:
+              {
+                " " + lastMove._signMarked
+              }
+            </Text>
+          </>
+          :
+          undefined
+      }
     </Box>
   );
 }

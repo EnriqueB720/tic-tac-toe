@@ -4,7 +4,7 @@ import {
   Image,
   Grid,
   GridItem,
-  Button
+  Button,
 } from './atoms/index';
 
 import {

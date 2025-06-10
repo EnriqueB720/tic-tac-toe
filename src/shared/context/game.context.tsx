@@ -5,7 +5,7 @@ import { PlayerMoves } from '../models';
 export interface IGameContext {
   actualPlayer?: PlayerType;
   historyOfMoves: PlayerMoves[];
-  roundNumber?: number;
+  roundNumber: number;
   removeLastMove: () => PlayerMoves;
   changePlayer: () => void;
   registerNewMove: (position: number) => void;

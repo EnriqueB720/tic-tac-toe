@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Confetti from 'react-confetti'
 
 import _ from 'lodash';
 
@@ -7,18 +8,22 @@ import { useState, useEffect, useContext, useCallback } from 'react';
 import { GameContext } from '@/shared/context';
 import styles from './styles.module.css';
 import { Board } from '../../organisms';
+import { PlayerType } from '@types';
+import { Dialog, Portal } from '@chakra-ui/react';
 
 const Layout: React.FC = () => {
 
   const { actualPlayer, roundNumber, historyOfMoves, resetGame } = useContext(GameContext);
   const [removeLastPlay, setRemoveLastPlay] = useState(false);
   const [isNewGame, setNewGame] = useState<boolean>(false);
-  const [isGameOver, setGameOver] = useState(false);
+  const [winner, setWinner] = useState<PlayerType | 'draw' | null>(null);
+  const [openModal, setOpenModal] = useState(false);
 
-  const onNewGame = useCallback(() => {
-    setNewGame(true);
-  }, [isNewGame]);
 
+  const [boardMatrix, setBoardMatrix] = useState<(PlayerType | null)[][]>(
+    [[null, null, null],
+    [null, null, null],
+    [null, null, null]]);
 
   useEffect(() => {
     if (isNewGame) {
@@ -27,51 +32,173 @@ const Layout: React.FC = () => {
     }
   }, [isNewGame]);
 
+  useEffect(() => {
+
+    if (historyOfMoves.length > 0) {
+      let copyBoardMatrix = [...boardMatrix];
+      const row = Math.floor(historyOfMoves[historyOfMoves.length - 1]._position! / 3);
+      const col = historyOfMoves[historyOfMoves.length - 1]._position! % 3;
+
+      copyBoardMatrix[row][col] = historyOfMoves[historyOfMoves.length - 1]._signMarked!;
+      setBoardMatrix(copyBoardMatrix);
+    }
+
+    let result = checkWinner(boardMatrix);
+
+    if (result !== null) {
+      setWinner(result);
+      setOpenModal(true);
+    }
+
+  }, [roundNumber]);
+
+
+  const checkWinner = (matrix: (PlayerType | null)[][]): PlayerType | 'draw' | null => {
+
+    // Check rows
+    for (let i = 0; i < 3; i++) {
+      if (
+        matrix[i][0] &&
+        matrix[i][0] === matrix[i][1] &&
+        matrix[i][1] === matrix[i][2]
+      ) {
+        return matrix[i][0];
+      }
+    }
+
+    // Check columns
+    for (let j = 0; j < 3; j++) {
+      if (
+        matrix[0][j] &&
+        matrix[0][j] === matrix[1][j] &&
+        matrix[1][j] === matrix[2][j]
+      ) {
+        return matrix[0][j];
+      }
+    }
+
+    // Check diagonals \
+    if (
+      matrix[0][0] &&
+      matrix[0][0] === matrix[1][1] &&
+      matrix[1][1] === matrix[2][2]
+    ) {
+      return matrix[0][0];
+    }
+
+    //check diagonals /
+    if (
+      matrix[0][2] &&
+      matrix[0][2] === matrix[1][1] &&
+      matrix[1][1] === matrix[2][0]
+    ) {
+      return matrix[0][2];
+    }
+
+    // Check for draw (if no nulls left)
+    const isBoardFull = matrix.every(row => row.every(cell => cell !== null));
+
+    if (isBoardFull) {
+      return 'draw';
+    }
+
+    // Game still in progress
+    return null;
+
+  }
+
+  const onNewGame = useCallback(() => {
+    setNewGame(true);
+  }, [isNewGame]);
+
 
   return (
-    <Box textAlign={'center'}>
-      <Box display={'flex'} justifyContent={'center'}>
+    <>
+      <Box textAlign={'center'} minW={'430px'}>
+
+        <Box display={'flex'} justifyContent={'center'}>
+          {
+            winner !== null && winner !== 'draw' ?
+              <Confetti />
+              :
+              undefined
+          }
+
+          <Text
+            className={styles["glitch-text"]}
+            data-text="Tic Tac Toe">Tic Tac Toe</Text>
+        </Box>
+
+        <Button
+          bg={'black'}
+          mt={10}
+          onClick={() => onNewGame()}>
+          New Game
+        </Button>
+
         <Text
-          className={styles["glitch-text"]}
-          data-text="Tic Tac Toe">Tic Tac Toe</Text>
+          mt={20}
+          textStyle="4xl">
+          Player: <b>{actualPlayer}</b>
+        </Text>
+
+        <Box
+          mt={20}
+          display={'flex'}
+          justifyContent={'center'}>
+          <Board
+            removeLastMoveFlag={removeLastPlay}
+            setRemoveLastMoveFlag={setRemoveLastPlay}
+          />
+        </Box>
+
+        {
+          roundNumber > 1 ?
+            <Button mt={10} onClick={() => {
+              setRemoveLastPlay(true)
+            }}>Remove last play</Button>
+            :
+            undefined
+        }
       </Box>
 
-      <Button
-        bg={'black'}
-        mt={10}
-        onClick={() => onNewGame()}>
-        New Game
-      </Button>
-
-      <Text
-        mt={20}
-        textStyle="4xl">
-        Player: <b>{actualPlayer}</b>
-      </Text>
-      {
-
-      }
-      <Box
-        mt={20}
-        display={'flex'}
-        justifyContent={'center'}>
-
-        <Board
-          removeLastMoveFlag={removeLastPlay}
-          setRemoveLastMoveFlag={setRemoveLastPlay}
-        />
-      </Box>
-
-      {
-        roundNumber! > 1 ?
-          <Button mt={10} onClick={() => {
-            setRemoveLastPlay(true)
-          }}>Remove last play</Button>
-          :
-          undefined
-      }
-
-    </Box>
+      {/* Modal */}
+      <Dialog.Root
+        placement={'center'}
+        open={openModal}
+        onOpenChange={(e) => {
+          setOpenModal(e.open);
+          setWinner(null);
+          setBoardMatrix(
+            [[null, null, null],
+            [null, null, null],
+            [null, null, null]]);
+          setNewGame(true);
+        }}
+      >
+        <Portal>
+          <Dialog.Backdrop minW={'430px'} />
+          <Dialog.Positioner minW={'430px'}>
+            <Dialog.Content>
+              <Dialog.Body>
+                <Box h={100} display={'flex'} alignItems={'center'}>
+                  {
+                    winner !== 'draw' ?
+                      <Text textStyle="2xl">
+                        The winner is {winner}!
+                      </Text>
+                      :
+                      <Text textStyle="2xl">
+                        It's a draw!
+                      </Text>
+                  }
+                </Box>
+              </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
+    </>
   );
 }
 

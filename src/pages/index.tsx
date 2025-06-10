@@ -8,11 +8,6 @@ export default function Home(prop: any) {
   return (
     <>
       <Layout />
-      {/* <Board isGameOver={false} isNewGame = {false} playerMoves={[]} removeLastMoveFlag={removeLastPlay} setRemoveLastMoveFlag={setRemoveLastPlay}/>
-
-      <Button onClick={() => {
-        setRemoveLastPlay(true)
-      }}>Remove last play</Button> */}
     </>
   )
 }

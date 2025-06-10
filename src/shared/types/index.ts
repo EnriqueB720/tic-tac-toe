@@ -8,3 +8,4 @@ export * from "./board-item.type";
 export * from "./board.type";
 export * from "./player.type";
 export * from "./game-provider.type";
+export * from "./dialog.type";

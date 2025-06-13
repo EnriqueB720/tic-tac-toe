@@ -22,7 +22,8 @@
       "@/*": ["./src/*"],
       "@types": ["./src/shared/types/index"],
       "@components": ["./src/shared/components/index"],
-      "@models": ["./src/shared/models/index"]
+      "@models": ["./src/shared/models/index"],
+      "@services":["./src/shared/services/index"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

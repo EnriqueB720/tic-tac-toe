@@ -10,15 +10,18 @@ import styles from './styles.module.css';
 import { Board } from '../../organisms';
 import { PlayerType } from '@types';
 import { Dialog, Portal } from '@chakra-ui/react';
+import { AiPlayerHelper } from '@services';
 
 const Layout: React.FC = () => {
 
-  const { actualPlayer, roundNumber, historyOfMoves, resetGame } = useContext(GameContext);
+  const { actualPlayer, roundNumber, historyOfMoves, resetGame, registerNewMove, changePlayer } = useContext(GameContext);
   const [removeLastPlay, setRemoveLastPlay] = useState(false);
   const [isNewGame, setNewGame] = useState<boolean>(false);
   const [winner, setWinner] = useState<PlayerType | 'draw' | null>(null);
   const [openModal, setOpenModal] = useState(false);
+  const [isAIThinking, setIsAIThinking] = useState(false);
 
+  const aiPlayerService: AiPlayerHelper = new AiPlayerHelper();
 
   const [boardMatrix, setBoardMatrix] = useState<(PlayerType | null)[][]>(
     [[null, null, null],
@@ -28,7 +31,10 @@ const Layout: React.FC = () => {
   useEffect(() => {
     if (isNewGame) {
       resetGame();
-      setNewGame(false)
+      setNewGame(false);
+      setBoardMatrix([[null, null, null],
+      [null, null, null],
+      [null, null, null]]);
     }
   }, [isNewGame]);
 
@@ -43,7 +49,7 @@ const Layout: React.FC = () => {
       setBoardMatrix(copyBoardMatrix);
     }
 
-    let result = checkWinner(boardMatrix);
+    let result = aiPlayerService.checkWinner(boardMatrix);
 
     if (result !== null) {
       setWinner(result);
@@ -52,64 +58,32 @@ const Layout: React.FC = () => {
 
   }, [roundNumber]);
 
+  useEffect(() => {
+    if (actualPlayer === 'O' && winner === null) {
+      setIsAIThinking(true);
+      let move = aiPlayerService.getBestMove(boardMatrix, 'O', 'X')!;
+      setTimeout(() => {
 
-  const checkWinner = (matrix: (PlayerType | null)[][]): PlayerType | 'draw' | null => {
+        if (!move) {
+          console.warn("No move returned by AI");
+          return;
+        }
 
-    // Check rows
-    for (let i = 0; i < 3; i++) {
-      if (
-        matrix[i][0] &&
-        matrix[i][0] === matrix[i][1] &&
-        matrix[i][1] === matrix[i][2]
-      ) {
-        return matrix[i][0];
-      }
+        let boardPosition = move!.row! * 3 + move!.col!;
+
+        setIsAIThinking(false);
+        registerNewMove(boardPosition);
+        changePlayer();
+
+      }, 3000);
     }
-
-    // Check columns
-    for (let j = 0; j < 3; j++) {
-      if (
-        matrix[0][j] &&
-        matrix[0][j] === matrix[1][j] &&
-        matrix[1][j] === matrix[2][j]
-      ) {
-        return matrix[0][j];
-      }
-    }
-
-    // Check diagonals \
-    if (
-      matrix[0][0] &&
-      matrix[0][0] === matrix[1][1] &&
-      matrix[1][1] === matrix[2][2]
-    ) {
-      return matrix[0][0];
-    }
-
-    //check diagonals /
-    if (
-      matrix[0][2] &&
-      matrix[0][2] === matrix[1][1] &&
-      matrix[1][1] === matrix[2][0]
-    ) {
-      return matrix[0][2];
-    }
-
-    // Check for draw (if no nulls left)
-    const isBoardFull = matrix.every(row => row.every(cell => cell !== null));
-
-    if (isBoardFull) {
-      return 'draw';
-    }
-
-    // Game still in progress
-    return null;
-
-  }
+  }, [actualPlayer]);
 
   const onNewGame = useCallback(() => {
     setNewGame(true);
   }, [isNewGame]);
+
+
 
 
   return (
@@ -152,14 +126,14 @@ const Layout: React.FC = () => {
           />
         </Box>
 
-        {
+        {/*TODO: Enable and disable ai playing {
           roundNumber > 1 ?
             <Button mt={10} onClick={() => {
               setRemoveLastPlay(true)
             }}>Remove last play</Button>
             :
             undefined
-        }
+        } */}
       </Box>
 
       {/* Modal */}
@@ -198,6 +172,30 @@ const Layout: React.FC = () => {
           </Dialog.Positioner>
         </Portal>
       </Dialog.Root>
+
+      <Dialog.Root
+        placement={'center'}
+        open={isAIThinking}
+        onOpenChange={(e) => {
+          setOpenModal(e.open);
+        }}
+      >
+        <Portal>
+          <Dialog.Backdrop minW={'430px'} />
+          <Dialog.Positioner minW={'430px'}>
+            <Dialog.Content>
+              <Dialog.Body>
+                <Box h={100} display={'flex'} alignItems={'center'}>
+                  <Text textStyle="2xl">
+                    The other player is thinking...
+                  </Text>
+                </Box>
+              </Dialog.Body>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
+
     </>
   );
 }

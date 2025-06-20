@@ -35,11 +35,11 @@ const Layout: React.FC = () => {
       setBoardMatrix([[null, null, null],
       [null, null, null],
       [null, null, null]]);
+      setWinner(null);
     }
   }, [isNewGame]);
 
   useEffect(() => {
-
     if (historyOfMoves.length > 0) {
       let copyBoardMatrix = [...boardMatrix];
       const row = Math.floor(historyOfMoves[historyOfMoves.length - 1]._position! / 3);
@@ -56,10 +56,18 @@ const Layout: React.FC = () => {
       setOpenModal(true);
     }
 
+
+    if (actualPlayer === 'O' && result === null) {
+      AiPlayerMove();
+    }
+
   }, [roundNumber]);
 
-  useEffect(() => {
-    if (actualPlayer === 'O' && winner === null) {
+  const onNewGame = useCallback(() => {
+    setNewGame(true);
+  }, [isNewGame]);
+
+  const AiPlayerMove = () => {
       setIsAIThinking(true);
       let move = aiPlayerService.getBestMove(boardMatrix, 'O', 'X')!;
       setTimeout(() => {
@@ -76,14 +84,7 @@ const Layout: React.FC = () => {
         changePlayer();
 
       }, 3000);
-    }
-  }, [actualPlayer]);
-
-  const onNewGame = useCallback(() => {
-    setNewGame(true);
-  }, [isNewGame]);
-
-
+  }
 
 
   return (
@@ -142,11 +143,6 @@ const Layout: React.FC = () => {
         open={openModal}
         onOpenChange={(e) => {
           setOpenModal(e.open);
-          setWinner(null);
-          setBoardMatrix(
-            [[null, null, null],
-            [null, null, null],
-            [null, null, null]]);
           setNewGame(true);
         }}
       >
@@ -166,7 +162,11 @@ const Layout: React.FC = () => {
                         It's a draw!
                       </Text>
                   }
+                 
                 </Box>
+                 <Text textStyle={'sm'} textAlign={'center'}>
+                    (Click outside for a new game!)
+                  </Text>
               </Dialog.Body>
             </Dialog.Content>
           </Dialog.Positioner>
@@ -176,9 +176,6 @@ const Layout: React.FC = () => {
       <Dialog.Root
         placement={'center'}
         open={isAIThinking}
-        onOpenChange={(e) => {
-          setOpenModal(e.open);
-        }}
       >
         <Portal>
           <Dialog.Backdrop minW={'430px'} />

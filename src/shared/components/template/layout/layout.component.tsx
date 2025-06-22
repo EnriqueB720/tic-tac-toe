@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Confetti from 'react-confetti'
 
-import _ from 'lodash';
+import _, { set } from 'lodash';
 
 import { Box, Text, Button } from '../../atoms';
 import { useState, useEffect, useContext, useCallback } from 'react';
@@ -20,6 +20,8 @@ const Layout: React.FC = () => {
   const [winner, setWinner] = useState<PlayerType | 'draw' | null>(null);
   const [openModal, setOpenModal] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
+  const [playWithAFriend, setPlayWithAFriend] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
 
   const aiPlayerService: AiPlayerHelper = new AiPlayerHelper();
 
@@ -36,6 +38,11 @@ const Layout: React.FC = () => {
       [null, null, null],
       [null, null, null]]);
       setWinner(null);
+
+      if (winner === null) {
+        setGameStarted(false);
+      }
+
     }
   }, [isNewGame]);
 
@@ -57,33 +64,34 @@ const Layout: React.FC = () => {
     }
 
 
-    if (actualPlayer === 'O' && result === null) {
+    if (actualPlayer === 'O' && result === null && !playWithAFriend) {
       AiPlayerMove();
     }
 
   }, [roundNumber]);
 
-  const onNewGame = useCallback(() => {
-    setNewGame(true);
-  }, [isNewGame]);
-
   const AiPlayerMove = () => {
-      setIsAIThinking(true);
-      let move = aiPlayerService.getBestMove(boardMatrix, 'O', 'X')!;
-      setTimeout(() => {
+    setIsAIThinking(true);
+    let move = aiPlayerService.getBestMove(boardMatrix, 'O', 'X')!;
+    setTimeout(() => {
 
-        if (!move) {
-          console.warn("No move returned by AI");
-          return;
-        }
+      if (!move) {
+        console.warn("No move returned by AI");
+        return;
+      }
 
-        let boardPosition = move!.row! * 3 + move!.col!;
+      let boardPosition = move!.row! * 3 + move!.col!;
 
-        setIsAIThinking(false);
-        registerNewMove(boardPosition);
-        changePlayer();
+      setIsAIThinking(false);
+      registerNewMove(boardPosition);
+      changePlayer();
 
-      }, 3000);
+    }, 3000);
+  }
+
+  const startingGameSession = (isPlayingWithAFriend: boolean) => {
+    setGameStarted(true);
+    setPlayWithAFriend(isPlayingWithAFriend);
   }
 
 
@@ -104,37 +112,68 @@ const Layout: React.FC = () => {
             data-text="Tic Tac Toe">Tic Tac Toe</Text>
         </Box>
 
-        <Button
-          bg={'black'}
-          mt={10}
-          onClick={() => onNewGame()}>
-          New Game
-        </Button>
 
-        <Text
-          mt={20}
-          textStyle="4xl">
-          Player: <b>{actualPlayer}</b>
-        </Text>
+        {
+          gameStarted ?
+            <>
+              <Button
+                bg={'black'}
+                mt={10}
+                onClick={() => setNewGame(true)}>
+                New Game
+              </Button>
 
-        <Box
-          mt={20}
-          display={'flex'}
-          justifyContent={'center'}>
-          <Board
-            removeLastMoveFlag={removeLastPlay}
-            setRemoveLastMoveFlag={setRemoveLastPlay}
-          />
-        </Box>
+              <Text
+                mt={20}
+                textStyle="4xl">
+                Player: <b>{actualPlayer}</b>
+              </Text>
+              <Box
+                mt={20}
+                display={'flex'}
+                justifyContent={'center'}>
+                <Board
+                  removeLastMoveFlag={removeLastPlay}
+                  setRemoveLastMoveFlag={setRemoveLastPlay}
+                />
+              </Box>
+            </>
+            :
+            <Box
+              bg="black"
+              height={"200px"}
+              mt={15}
+              display={'flex'}
+              justifyContent={'space-around'}
+              alignItems={'center'}
+            >
+              <Button
+                textStyle={'2xl'}
+                bg={'#ff005e'}
+                onClick={() => {
+                  startingGameSession(true);
+                }}>
+                Player vs Player
+              </Button>
+              <Button
+                textStyle={'2xl'}
+                bg={'#00d4ff'}
+                onClick={() => {
+                  startingGameSession(false);
+                }}>
+                Player vs PC
+              </Button>
+            </Box>
+        }
 
-        {/*TODO: Enable and disable ai playing {
-          roundNumber > 1 ?
+        {
+          roundNumber > 1 && playWithAFriend ?
             <Button mt={10} onClick={() => {
               setRemoveLastPlay(true)
             }}>Remove last play</Button>
             :
             undefined
-        } */}
+        }
       </Box>
 
       {/* Modal */}
@@ -162,11 +201,11 @@ const Layout: React.FC = () => {
                         It's a draw!
                       </Text>
                   }
-                 
+
                 </Box>
-                 <Text textStyle={'sm'} textAlign={'center'}>
-                    (Click outside for a new game!)
-                  </Text>
+                <Text textStyle={'sm'} textAlign={'center'}>
+                  (Click outside for a new game!)
+                </Text>
               </Dialog.Body>
             </Dialog.Content>
           </Dialog.Positioner>
